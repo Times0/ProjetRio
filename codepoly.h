@@ -37,26 +37,4 @@ uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2]);
 
 void tablerreur(uint8_t polynome, uint8_t table[16][2]);
 
-
-int main(int argc, char const *argv[])
-{
-    uint8_t polynome =  0b10010011; // 0b10010011
-    uint16_t message = 'A';
-    
-    uint8_t table[16][2];
-    tablerreur(polynome,table);
-
-    message = encode(message,polynome);
-    // print_word(16,message);
-    message = chg_nth_bit(13,message);
-    
-    message = decode(message,polynome,table);
-    printf("%c\n",message);
-
-    // print_word(8,message);
-    
-    
-    //printf("La distance de Hamming du code est %d\n",distanceHamming(polynome));*/
-    
-    return 0;
-}
+static uint8_t polynome = 0b10010011;

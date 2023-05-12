@@ -6,15 +6,27 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
+#include "codepoly.h"
 
 void *preceive(void *arg)
 {
     int psoc = *((int*)arg);
-    char buf[1024];
+    uint16_t bufencoded[1024];
     int code;
-    while((code=recv(psoc,buf,1024,0)) != -1)
+    while((code=recv(psoc,bufencoded,1024,0)) != -1)
     {
         if(code==0){printf("proxy disconnected\n");exit(0);}
+        
+        char buf[1024];
+        uint8_t table[16][2];
+        tablerreur(polynome,table);
+        for(int i = 0;i<code;i++)
+        {
+            buf[i] = decode(bufencoded[i],polynome,table);
+            if(buf[i]=='\0')
+                break;
+        }
+
         printf("%s\n",buf);
     }
     perror("erreur recv\n");

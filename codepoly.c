@@ -132,7 +132,7 @@ void tablerreur(uint8_t polynome, uint8_t table[16][2])
 }
 
 
-int main(int argc, char const *argv[])
+/*int main(int argc, char const *argv[])
 {
     uint8_t polynome =  0b10010011; // 0b10010011
     uint16_t message = 'A';
@@ -150,7 +150,7 @@ int main(int argc, char const *argv[])
     // print_word(8,message);
     
     
-    //printf("La distance de Hamming du code est %d\n",distanceHamming(polynome));*/
+    //printf("La distance de Hamming du code est %d\n",distanceHamming(polynome));
     
     return 0;
-}
+}*/

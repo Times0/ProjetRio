@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -7,6 +6,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
+#include "codepoly.h"
 
 void *psend(void *arg)
 {
@@ -16,9 +16,16 @@ void *psend(void *arg)
     {
         int nb = read(0,buf,1024);
         buf[nb-1]='\0'; //remove \n
-        if(send(psoc,buf,1024,0)==-1)
+        
+        //encode message
+        uint16_t bufencoded[1024];
+        for(int i = 0;i<nb;i++)
         {
-            printf("hi");
+            bufencoded[i] = encode(buf[i],polynome);
+        }
+        
+        if(send(psoc,bufencoded,1024,0)==-1)
+        {
             perror("erreur send\n");
             exit(1);    
         }

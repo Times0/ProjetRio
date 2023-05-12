@@ -30,14 +30,13 @@ void *prelay(void *arg)
     while((code=recv(csoc,buf,1024,0)) != -1)
     {
         if(code==0){printf("client disconnected\n");exit(0);}
-        printf("Incoming message : %s\n",buf);
         
         // alteration message
         if(!(rand()%3))
         {
             int ind = rand()%strlen(buf);
             buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
-            printf("Alterated message : %s\n",buf);
+            printf("Message altered\n");
         }
 
         if(send(ssoc,buf,1024,0) == -1){perror("erreur send\n");exit(1);}
