@@ -18,23 +18,23 @@ void *prelay(void *arg)
 {
     int csoc = (((soc2*)arg)->csoc);
     int ssoc = (((soc2*)arg)->ssoc);
-    char buf[1024];
+    uint16_t buf[1024];
     int code;
     srand(time(NULL));
     
-    while((code=recv(csoc,buf,1024,0)) != -1)
+    while((code=recv(csoc,buf,1024*sizeof(uint16_t),0)) != -1)
     {
         if(code==0){printf("client disconnected\n");exit(0);}
         
         // alteration message
         if(!(rand()%3))
         {
-            int ind = rand()%strlen(buf);
+            int ind = rand()%7;//a changer
             buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
             printf("Message altered\n");
         }
 
-        if(send(ssoc,buf,1024,0) == -1){perror("erreur send\n");exit(1);}
+        if(send(ssoc,buf,1024*sizeof(uint16_t),0) == -1){perror("erreur send\n");exit(1);}
     }
     
     perror("erreur recv\n");

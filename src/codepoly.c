@@ -20,7 +20,7 @@ uint16_t set_nth_bit(int nthbit, uint16_t message, int value)//15-0
 }
 
 // get nth bit
-char get_nth_bit(int n, uint16_t m)//15-0
+uint16_t get_nth_bit(int n, uint16_t m)//15-0
 {
     return m >> n & 1;
 }
@@ -37,10 +37,7 @@ int cardbit(uint16_t mess)
 {
     int count = 0;
     for(int i = 0;i < 16;i++)
-    {
-        if(get_nth_bit(i,mess))
-            count++;
-    }
+        count += get_nth_bit(i,mess);
     return count;
 }
 
@@ -89,7 +86,6 @@ int distanceHamming(uint8_t polynome)
     return min;
 }
 
-
 int trycorrect(uint16_t *message, uint8_t rest, uint8_t table[16][2])
 {
     for(int i = 0;i<16;i++)
@@ -103,7 +99,7 @@ int trycorrect(uint16_t *message, uint8_t rest, uint8_t table[16][2])
     return -1;
 }
 
-// renvoie le mot originel et place dans reste si non NULL le reste de la division
+// renvoie le mot originel
 uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2])
 {
     //correspond au polynome poids fort gauche (x^n)

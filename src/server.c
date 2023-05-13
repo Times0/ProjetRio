@@ -8,25 +8,38 @@
 #include <errno.h>
 #include "../include/codepoly.h"
 
+
 void *preceive(void *arg)
 {
     int psoc = *((int*)arg);
-    uint16_t bufencoded[1024];
     int code;
-    while((code=recv(psoc,bufencoded,1024,0)) != -1)
+    struct sockaddr_in clientadd;
+    uint16_t bufencoded[1024];
+    char buf[1024];
+    while((code=recv(psoc,bufencoded,1024*sizeof(uint16_t),0)) != -1)
     {
         if(code==0){printf("proxy disconnected\n");exit(0);}
         
-        char buf[1024];
         uint8_t table[16][2];
         tablerreur(polynome,table);
-        for(int i = 0;i<code;i++)
+        
+        //decode le port et l'adresse
+        clientadd.sin_port = decode(bufencoded[0],polynome,table);
+        clientadd.sin_port |= decode(bufencoded[1],polynome,table)<<8;
+        printf("port : %d\n",clientadd.sin_port);
+        clientadd.sin_addr.s_addr = decode(bufencoded[2],polynome,table);
+        clientadd.sin_addr.s_addr |= decode(bufencoded[3],polynome,table)<<8;
+        clientadd.sin_addr.s_addr |= decode(bufencoded[4],polynome,table)<<16;
+        clientadd.sin_addr.s_addr |= decode(bufencoded[5],polynome,table)<<24;
+        printf("ip : %s\n",inet_ntoa(clientadd.sin_addr));
+
+        //decode le message
+        for(int i = 6;i<code;i++)
         {
-            buf[i] = decode(bufencoded[i],polynome,table);
-            if(buf[i]=='\0')
+            buf[i-6] = decode(bufencoded[i],polynome,table);
+            if(buf[i-6]=='\0')
                 break;
         }
-
         printf("%s\n",buf);
     }
     perror("erreur recv\n");

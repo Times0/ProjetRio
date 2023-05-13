@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <arpa/inet.h>
 #include <unistd.h>
 
 void print_word(int nb,uint16_t val);
@@ -12,7 +11,7 @@ uint16_t set_nth_bit(int nthbit, uint16_t message, int value);
 
 // get nth bit
 // bit numeroted in 15-0
-char get_nth_bit(int n, uint16_t m);
+uint16_t get_nth_bit(int n, uint16_t m);
 
 // change nth bit
 // bit numeroted in 15-0
