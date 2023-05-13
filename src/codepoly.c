@@ -121,7 +121,6 @@ uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2])
 void tablerreur(uint8_t polynome, uint8_t table[16][2])
 {
     uint16_t message = 0b000000000;
-    uint8_t reste;
     for(int i = 0;i<16;i++)
     {
         uint16_t encoded = encode(message,polynome);
@@ -131,8 +130,8 @@ void tablerreur(uint8_t polynome, uint8_t table[16][2])
     }
 }
 
-
-/*int main(int argc, char const *argv[])
+#ifdef MAIN
+int main(void)
 {
     uint8_t polynome =  0b10010011; // 0b10010011
     uint16_t message = 'A';
@@ -145,12 +144,13 @@ void tablerreur(uint8_t polynome, uint8_t table[16][2])
     message = chg_nth_bit(13,message);
     
     message = decode(message,polynome,table);
-    printf("%c\n",message);
+    //printf("%c\n",message);
 
     // print_word(8,message);
     
     
-    //printf("La distance de Hamming du code est %d\n",distanceHamming(polynome));
+    printf("La distance de Hamming du code est %d\n",distanceHamming(polynome));
     
     return 0;
-}*/
+}
+#endif

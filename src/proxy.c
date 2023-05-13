@@ -6,18 +6,13 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
+#include "../include/codepoly.h"
 
 typedef struct
 {
     int ssoc;
     int csoc;
 }soc2;
-
-char chg_nth_bit(int n, char m)//15-0
-{
-    char maske = 0b00000001;
-    return (maske <<= n) ^ m;
-}
 
 void *prelay(void *arg)
 {
@@ -53,7 +48,8 @@ int main(int argc, char **argv)
         printf("usage: %s <ip> <port> <ipserver> <portserver>\n",argv[0]);
         exit(1);
     }
-    
+    (void)polynome;
+
     int soc = socket(AF_INET,SOCK_STREAM,0);
     int ssoc = socket(AF_INET,SOCK_STREAM,0);
 

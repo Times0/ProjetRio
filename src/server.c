@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
-#include "codepoly.h"
+#include "../include/codepoly.h"
 
 void *preceive(void *arg)
 {
