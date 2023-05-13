@@ -36,4 +36,6 @@ uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2]);
 
 void tablerreur(uint8_t polynome, uint8_t table[16][2]);
 
+int get_index(uint16_t mot, uint16_t tab[], int size);
+
 static uint8_t polynome = 0b10010011;

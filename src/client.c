@@ -24,6 +24,7 @@ void *psend(void *arg)
 
     uint16_t bufencoded[1024]; // 2 octets de port + 4 octets d'adresse + 1018 octets de message
     char buf[1024];
+
     // encode l'adresse ip et le port
     bufencoded[0] = encode(htons(localadd.sin_port),polynome);
     bufencoded[1] = encode(htons(localadd.sin_port)>>8,polynome);   
@@ -31,7 +32,7 @@ void *psend(void *arg)
     bufencoded[3] = encode(localadd.sin_addr.s_addr>>8,polynome);
     bufencoded[4] = encode(localadd.sin_addr.s_addr>>16,polynome);
     bufencoded[5] = encode(localadd.sin_addr.s_addr>>24,polynome);
-    
+
     while(1)
     {
         int nb = read(0,buf,1018);

@@ -99,7 +99,7 @@ int trycorrect(uint16_t *message, uint8_t rest, uint8_t table[16][2])
     return -1;
 }
 
-// renvoie le mot originel
+// renvoie le mot originel sur uint8_t, renvoie un int pour gerer les erreurs
 uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2])
 {
     //correspond au polynome poids fort gauche (x^n)
@@ -108,7 +108,8 @@ uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2])
     {
         if(trycorrect(&message,rest,table) == -1)
         {
-            printf("Error CRC\n");
+            // printf("Error CRC\n");
+            return 6;//inutilisé dans ascii
         }
     }
     return message >> 8;
@@ -124,6 +125,16 @@ void tablerreur(uint8_t polynome, uint8_t table[16][2])
         table[i][0] = i;
         table[i][1] = divisionpoly(polynome,encoded);
     }
+}
+
+int get_index(uint16_t mot, uint16_t tab[], int size)
+{
+    for(int i = 0;i<size;i++)
+    {
+        if(mot == tab[i])
+            return i;
+    }
+    return -1;
 }
 
 #ifdef MAIN

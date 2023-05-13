@@ -26,10 +26,13 @@ void *prelay(void *arg)
     {
         if(code==0){printf("client disconnected\n");exit(0);}
         
-        // alteration message
+        // alteration message ~1/3 chance
         if(!(rand()%3))
         {
-            int ind = rand()%7;//a changer
+            //donne la taille du message
+            int size = get_index(encode('\0',polynome),&buf[6],1024) + 6;
+            int ind = rand()%size;
+            buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
             buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
             printf("Message altered\n");
         }

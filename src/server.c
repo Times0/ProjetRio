@@ -23,24 +23,32 @@ void *preceive(void *arg)
         uint8_t table[16][2];
         tablerreur(polynome,table);
         
-        //decode le port et l'adresse
-        clientadd.sin_port = decode(bufencoded[0],polynome,table);
-        clientadd.sin_port |= decode(bufencoded[1],polynome,table)<<8;
-        printf("port : %d\n",clientadd.sin_port);
-        clientadd.sin_addr.s_addr = decode(bufencoded[2],polynome,table);
-        clientadd.sin_addr.s_addr |= decode(bufencoded[3],polynome,table)<<8;
-        clientadd.sin_addr.s_addr |= decode(bufencoded[4],polynome,table)<<16;
-        clientadd.sin_addr.s_addr |= decode(bufencoded[5],polynome,table)<<24;
-        printf("ip : %s\n",inet_ntoa(clientadd.sin_addr));
-
         //decode le message
-        for(int i = 6;i<code;i++)
+        for(int i = 0;i<code;i++)
         {
-            buf[i-6] = decode(bufencoded[i],polynome,table);
-            if(buf[i-6]=='\0')
+            buf[i] = decode(bufencoded[i],polynome,table);
+            
+            //si decode a echoué
+            if(buf[i]==6)
+            {
+                printf("Retransmission %d\n",buf[i]);
+            }
+            
+            //si fin de message, i > 5 car on veut recuperer l'adresse ip et le port 
+            if(buf[i]=='\0' && i>5)
                 break;
         }
-        printf("%s\n",buf);
+
+        clientadd.sin_port = (uint8_t)buf[0];
+        clientadd.sin_port |= (uint8_t)buf[1]<<8;
+        clientadd.sin_addr.s_addr = (uint8_t)buf[2];
+        clientadd.sin_addr.s_addr |= (uint8_t)buf[3]<<8;
+        clientadd.sin_addr.s_addr |= (uint8_t)buf[4]<<16;
+        clientadd.sin_addr.s_addr |= (uint8_t)buf[5]<<24;
+        
+        printf("port : %d\n",clientadd.sin_port);
+        printf("ip : %s\n",inet_ntoa(clientadd.sin_addr));
+        printf("%s\n",&buf[6]);
     }
     perror("erreur recv\n");
     exit(1);
