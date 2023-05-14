@@ -11,12 +11,12 @@
 
 void *psend(void *arg)
 {
-    int psoc = *((int*)arg);
+    int proxysoc = *((int*)arg);
     struct sockaddr_in localadd;
     socklen_t localaddlen = sizeof(localadd);
     
     // recupere l'adresse ip et le port du client pour l'envoyer
-    if(getsockname(psoc,(void*)&(localadd),&localaddlen)==-1)
+    if(getsockname(proxysoc,(void*)&(localadd),&localaddlen)==-1)
         perror("error getsockname :");
     
     printf("port : %d\n",htons(localadd.sin_port));
@@ -48,7 +48,7 @@ void *psend(void *arg)
         }
         
         // envoie le message
-        if(send(psoc,&bufencoded,1024*sizeof(uint16_t),0)==-1)
+        if(send(proxysoc,&bufencoded,1024*sizeof(uint16_t),0)==-1)
         {
             perror("erreur send\n");
             exit(1);    

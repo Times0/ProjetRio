@@ -18,7 +18,7 @@ void *preceive(void *arg)
     char buf[1024];
     while((code=recv(psoc,bufencoded,1024*sizeof(uint16_t),0)) != -1)
     {
-        if(code==0){printf("proxy disconnected\n");exit(0);}
+        if(code==0){printf("Proxy disconnected\n");exit(0);}
         
         uint8_t table[16][2];
         tablerreur(polynome,table);
@@ -65,20 +65,20 @@ int main(int argc, char **argv)
     
     int soc = socket(AF_INET,SOCK_STREAM,0);
 
-    struct sockaddr_in add;
-    add.sin_family = AF_INET;
-    add.sin_port = htons(atoi(argv[2]));
-    inet_aton(argv[1], &(add.sin_addr));
+    struct sockaddr_in localadd;
+    localadd.sin_family = AF_INET;
+    localadd.sin_port = htons(atoi(argv[2]));
+    inet_aton(argv[1], &(localadd.sin_addr));
 
-    if(bind(soc,(void*)&add,sizeof(add)) == -1)
+    if(bind(soc,(void*)&localadd,sizeof(localadd)) == -1)
     {
         perror("error bind\n");
         exit(1);
     }
     
     int psoc;
-    struct sockaddr_in peer;
-    socklen_t plen;
+    struct sockaddr_in proxyadd;
+    socklen_t len;
 
     if(listen(soc,1)==-1)
     {
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     }
 
     // connection from proxy
-    if((psoc = accept(soc,(void*)&peer,&plen))==-1){perror("error accept\n");exit(1);}
+    if((psoc = accept(soc,(void*)&proxyadd,&len))==-1){perror("error accept\n");exit(1);}
     printf("Connected to proxy\n");
 
     while(1)

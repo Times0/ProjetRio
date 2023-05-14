@@ -10,21 +10,21 @@
 
 typedef struct
 {
-    int ssoc;
-    int csoc;
+    int serversoc;
+    int clientsoc;
 }soc2;
 
 void *prelay(void *arg)
 {
-    int csoc = (((soc2*)arg)->csoc);
-    int ssoc = (((soc2*)arg)->ssoc);
+    int clientsoc = (((soc2*)arg)->clientsoc);
+    int serversoc = (((soc2*)arg)->serversoc);
     uint16_t buf[1024];
     int code;
     srand(time(NULL));
     
-    while((code=recv(csoc,buf,1024*sizeof(uint16_t),0)) != -1)
+    while((code=recv(clientsoc,buf,1024*sizeof(uint16_t),0)) != 0)
     {
-        if(code==0){printf("client disconnected\n");exit(0);}
+        if(code==-1){perror("erreur recv\n");exit(1);}
         
         // alteration message ~1/3 chance
         if(!(rand()%3))
@@ -33,15 +33,15 @@ void *prelay(void *arg)
             int size = get_index(encode('\0',polynome),&buf[6],1024) + 6;
             int ind = rand()%size;
             buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
-            buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
+            // buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
             printf("Message altered\n");
         }
 
-        if(send(ssoc,buf,1024*sizeof(uint16_t),0) == -1){perror("erreur send\n");exit(1);}
+        if(send(serversoc,buf,1024*sizeof(uint16_t),0) == -1){perror("erreur send\n");exit(1);}
     }
     
-    perror("erreur recv\n");
-    exit(1);
+    printf("client disconnected\n");
+    pthread_exit(NULL);
 }
 
 int main(int argc, char **argv)
@@ -54,25 +54,26 @@ int main(int argc, char **argv)
     (void)polynome;
 
     int soc = socket(AF_INET,SOCK_STREAM,0);
-    int ssoc = socket(AF_INET,SOCK_STREAM,0);
+    int serversoc = socket(AF_INET,SOCK_STREAM,0);
 
-    struct sockaddr_in add;
-    add.sin_family = AF_INET;
-    add.sin_port = htons(atoi(argv[2]));
-    inet_aton(argv[1], &(add.sin_addr));
+    struct sockaddr_in localadd;
+    localadd.sin_family = AF_INET;
+    localadd.sin_port = htons(atoi(argv[2]));
+    inet_aton(argv[1], &(localadd.sin_addr));
 
-    if(bind(soc,(void*)&add,sizeof(add)) == -1)
+    if(bind(soc,(void*)&localadd,sizeof(localadd)) == -1)
     {
         perror("error bind\n");
         exit(1);
     }
 
-    add.sin_port = htons(atoi(argv[4]));
-    inet_aton(argv[3], &(add.sin_addr));
+    struct sockaddr_in serveradd;
+    serveradd.sin_port = htons(atoi(argv[4]));
+    inet_aton(argv[3], &(serveradd.sin_addr));
     
-    int csoc;
-    struct sockaddr_in peer;
-    socklen_t plen = sizeof(struct sockaddr_in);
+    int clientsoc;
+    struct sockaddr_in clientadd;
+    socklen_t len = sizeof(struct sockaddr_in);
 
     if(listen(soc,1)==-1)
     {
@@ -80,19 +81,21 @@ int main(int argc, char **argv)
         exit(1);
     }
     // connection to server
-    if(connect(ssoc,(void*)&add,plen) == -1){perror("error connect \n");exit(1);}
+    if(connect(serversoc,(void*)&serveradd,len) == -1){perror("error connect \n");exit(1);}
     printf("Connected to server\n");
-    
-    // connection from client, 
-    if((csoc = accept(soc,(void*)&peer,&plen))==-1){perror("error accept\n");exit(1);}
-    printf("Connected to client\n");
     
     soc2 s;
     while(1)
     {
-        s.csoc = csoc;
-        s.ssoc = ssoc;
-        prelay(&s);
+        // connection from client, 
+        if((clientsoc = accept(soc,(void*)&clientadd,&len))==-1){perror("error accept\n");exit(1);}
+        printf("Connected to client\n");
+        s.clientsoc = clientsoc;
+        s.serversoc = serversoc;
+        
+        //pas ouf si 2 clients se connectent en meme temps, s peut etre ecrase
+        pthread_t thread;
+        pthread_create(&thread,NULL,prelay,&s);
     }
     
     close(soc);
