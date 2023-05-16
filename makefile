@@ -7,7 +7,7 @@ BIN_DIR := bin
 SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CFLAGS   := #-Wall -Werror -Wextra
+CFLAGS   := -Wall -Werror -Wextra -Wno-unused-variable
 LDLIBS   := -pthread
 
 all:

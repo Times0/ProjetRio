@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "../include/codepoly.h"
 
+// print nb bits of val
 void print_word(int nb,uint16_t val)
 {
     printf("0b");
@@ -13,20 +15,20 @@ void print_word(int nb,uint16_t val)
 }
 
 // set nth bit to value (0-1)
-uint16_t set_nth_bit(int nthbit, uint16_t message, int value)//15-0
+uint16_t set_nth_bit(int nthbit, uint16_t message, int value)
 {
     uint16_t maske = value;
     return (maske <<= nthbit) | message;
 }
 
-// get nth bit
-uint16_t get_nth_bit(int n, uint16_t m)//15-0
+// get nth bit of m
+uint16_t get_nth_bit(int n, uint16_t m)
 {
     return m >> n & 1;
 }
 
-// change nth bit
-uint16_t chg_nth_bit(int nth, uint16_t m)//15-0
+// change nth bit of m
+uint16_t chg_nth_bit(int nth, uint16_t m)
 {
     uint16_t maske = 1;
     return (maske <<= nth) ^ m;
@@ -44,94 +46,89 @@ int cardbit(uint16_t mess)
 // divide message by poly and return rest
 uint8_t divisionpoly(uint8_t poly, uint16_t message)
 {
-    uint8_t registre = 0;   // registre a 0
+    uint8_t registre = 0;   // register to 0
     
     for(int i = 0;i<16;i++)
     {
-        int sortant = get_nth_bit(7,registre); // bit sortant du registre apres decalage
-        registre <<= 1; // decalage du registre
+        int bitleft = get_nth_bit(7,registre); // bit left after shifting
+        registre <<= 1; // shift the registrer
         
-        //insertion du bit de message
+        //add next bit of message in registre
         if(get_nth_bit(15-i,message))
             registre = set_nth_bit(0,registre,1);
         else
             registre = set_nth_bit(0,registre,0);
 
-        // XOR registre-polynome
-        if(sortant)
+        // XOR register-polynom
+        if(bitleft)
             registre = registre ^ poly;
     }
     return registre;
 }
 
-uint16_t encode(uint8_t message, uint8_t polynome)
+uint16_t encode(uint8_t wrd, uint8_t poly)
 {
-    //correspond au polynome poids fort a gauche (x^n)
-    uint16_t fmess = message;
-    fmess <<= 8; //decale le message original
+    uint16_t fmess = wrd;
+    fmess <<= 8; // shift original message
 
-    return fmess | divisionpoly(polynome,fmess);
+    return fmess | divisionpoly(poly,fmess); // add rest
 }
 
 // give the Hamming distance
-int distanceHamming(uint8_t polynome)
+int distanceHamming(uint8_t poly)
 {
     int min = 16;
     for(int i = 1;i<256;i++)
     {
-        int nbbit = cardbit(encode(i,polynome));
+        int nbbit = cardbit(encode(i,poly));
         if(nbbit < min)
             min = nbbit;
     }
     return min;
 }
 
-int trycorrect(uint16_t *message, uint8_t rest, uint8_t table[16][2])
+int trycorrect(uint16_t *wrd, uint8_t rest, uint8_t table[16][2])
 {
     for(int i = 0;i<16;i++)
     {
         if(table[i][1] == rest)
         {
-            *message = chg_nth_bit(i,*message);
+            *wrd = chg_nth_bit(i,*wrd);
             return 0;
         }
     }
     return -1;
 }
 
-// renvoie le mot originel sur uint8_t, renvoie un int pour gerer les erreurs
-uint8_t decode(uint16_t message, uint8_t polynome, uint8_t table[16][2])
+//return -1 if message can't be decoded, uint_8 else
+int decode(uint16_t wrd, uint8_t poly, uint8_t table[16][2])
 {
-    //correspond au polynome poids fort gauche (x^n)
-    uint8_t rest = divisionpoly(polynome,message);
+    uint8_t rest = divisionpoly(poly,wrd);
     if(rest)
     {
-        if(trycorrect(&message,rest,table) == -1)
-        {
-            // printf("Error CRC\n");
-            return 6;//inutilisé dans ascii
-        }
+        if(trycorrect(&wrd,rest,table) == -1)
+            return -1;
     }
-    return message >> 8;
+    return wrd >> 8;
 }
 
-void tablerreur(uint8_t polynome, uint8_t table[16][2])
+void initerrortable(uint8_t poly, uint8_t table[16][2])
 {
     uint16_t message = 0b000000000;
     for(int i = 0;i<16;i++)
     {
-        uint16_t encoded = encode(message,polynome);
+        uint16_t encoded = encode(message,poly);
         encoded = chg_nth_bit(i,encoded);
         table[i][0] = i;
-        table[i][1] = divisionpoly(polynome,encoded);
+        table[i][1] = divisionpoly(poly,encoded);
     }
 }
 
-int get_index(uint16_t mot, uint16_t tab[], int size)
+int get_index(uint16_t wrd, uint16_t arr[], int size)
 {
     for(int i = 0;i<size;i++)
     {
-        if(mot == tab[i])
+        if(wrd == arr[i])
             return i;
     }
     return -1;
@@ -140,23 +137,17 @@ int get_index(uint16_t mot, uint16_t tab[], int size)
 #ifdef MAIN
 int main(void)
 {
-    uint8_t polynome =  0b10010011; // 0b10010011
-    uint16_t message = 'A';
+    uint16_t wrd = 'A';
     
     uint8_t table[16][2];
-    tablerreur(polynome,table);
+    initerrortable(polynom,table);
 
-    message = encode(message,polynome);
-    // print_word(16,message);
-    message = chg_nth_bit(13,message);
-    
-    message = decode(message,polynome,table);
-    //printf("%c\n",message);
-
-    // print_word(8,message);
+    wrd = encode(wrd,polynom);
+    wrd = chg_nth_bit(13,wrd);
+    wrd = decode(wrd,polynom,table);
     
     
-    printf("La distance de Hamming du code est %d\n",distanceHamming(polynome));
+    printf("Hamming distance's of code is equal to %d\n",distanceHamming(polynom));
     
     return 0;
 }
