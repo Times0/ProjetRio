@@ -38,4 +38,4 @@ void tablerreur(uint8_t polynome, uint8_t table[16][2]);
 
 int get_index(uint16_t mot, uint16_t tab[], int size);
 
-static uint8_t polynome = 0b10010011;
+static uint8_t polynome = 0b10010011; //correspond au polynome poids fort gauche (x^7), x^8 n'est pas précisé car il vaut toujours 1

@@ -30,17 +30,22 @@ void *prelay(void *arg)
         if(!(rand()%3))
         {
             //donne la taille du message
-            int size = get_index(encode('\0',polynome),&buf[6],1024) + 6;
-            int ind = rand()%size;
-            buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
-            // buf[ind] = chg_nth_bit(rand()%8,buf[ind]);
-            printf("Message altered\n");
+            int size = get_index(encode('\0',polynome),&buf[7],1024);
+            //ici on corromp que les bits du message
+            if(size != 0)
+            {
+                int ind = rand()%size+7;
+                int nbit = rand()%16;
+                buf[ind] = chg_nth_bit(nbit,buf[ind]);
+                buf[ind] = chg_nth_bit((nbit+1)%16,buf[ind]);
+                printf("Message corrupteds\n");
+            }
         }
 
         if(send(serversoc,buf,1024*sizeof(uint16_t),0) == -1){perror("erreur send\n");exit(1);}
     }
     
-    printf("client disconnected\n");
+    printf("Client disconnected\n");
     pthread_exit(NULL);
 }
 
@@ -48,7 +53,7 @@ int main(int argc, char **argv)
 {    
     if(argc != 5)
     {
-        printf("usage: %s <ip> <port> <ipserver> <portserver>\n",argv[0]);
+        printf("usage: %s <ip_proxy> <port_proxy> <ip_server> <port_server>\n",argv[0]);
         exit(1);
     }
     (void)polynome;
@@ -56,17 +61,15 @@ int main(int argc, char **argv)
     int soc = socket(AF_INET,SOCK_STREAM,0);
     int serversoc = socket(AF_INET,SOCK_STREAM,0);
 
+    // set up de l'adresse locale
     struct sockaddr_in localadd;
     localadd.sin_family = AF_INET;
     localadd.sin_port = htons(atoi(argv[2]));
     inet_aton(argv[1], &(localadd.sin_addr));
 
-    if(bind(soc,(void*)&localadd,sizeof(localadd)) == -1)
-    {
-        perror("error bind\n");
-        exit(1);
-    }
+    if(bind(soc,(void*)&localadd,sizeof(localadd)) == -1){perror("error bind\n");exit(1);}
 
+    // set up de l'adresse du serveur
     struct sockaddr_in serveradd;
     serveradd.sin_port = htons(atoi(argv[4]));
     inet_aton(argv[3], &(serveradd.sin_addr));
@@ -75,11 +78,8 @@ int main(int argc, char **argv)
     struct sockaddr_in clientadd;
     socklen_t len = sizeof(struct sockaddr_in);
 
-    if(listen(soc,1)==-1)
-    {
-        perror("error listen\n");
-        exit(1);
-    }
+    if(listen(soc,1)==-1){perror("error listen\n");exit(1);}
+
     // connection to server
     if(connect(serversoc,(void*)&serveradd,len) == -1){perror("error connect \n");exit(1);}
     printf("Connected to server\n");
