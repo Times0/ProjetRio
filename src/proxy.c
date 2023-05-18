@@ -56,14 +56,31 @@ typedef struct
     int clientsoc;
 } soc2;
 
-#include <signal.h>
-#include <stdio.h>
-
-void handle_sigint(int sig)
+/* Corrupt message with a probability of 1/proba 1 time
+ * 2 times with a probability of 1/proba²
+ * Corruption is done by changing 1 or 2 bits in the message in the same byte
+ */
+void corrupt_message(uint16_t *buf, int proba)
 {
-    printf("Received SIGINT. Cleaning up and exiting...\n");
-    printf("%d\n", sig);
-    exit(0); // Terminate the program
+    int times = 0;
+    if (!(rand() % proba))
+    {
+        int size = get_index(encode('\0', polynom), &buf[7], 1024);
+        if (size != 0)
+        {
+            times++;
+            int ind = rand() % size + 7;
+            int nbit = rand() % 16;
+            buf[ind] = chg_nth_bit(nbit, buf[ind]);
+
+            if (!(rand() % proba))
+            {
+                buf[ind] = chg_nth_bit((nbit + 1) % 16, buf[ind]);
+                times++;
+            }
+        }
+    }
+    printf("Message corrupted %d time(s)\n", times);
 }
 
 // One relay fonction for each client
@@ -72,7 +89,7 @@ void *prelay(void *arg)
     int clientsoc = (((soc2 *)arg)->clientsoc);
     int serversoc = (((soc2 *)arg)->serversoc);
     uint16_t buf[1024];
-    int code, times;
+    int code;
     srand(time(NULL));
 
     while ((code = recv(clientsoc, buf, 1024 * sizeof(uint16_t), 0)) != 0)
@@ -83,29 +100,8 @@ void *prelay(void *arg)
             exit(1);
         }
 
-        times = 0;
-        // alteration message ~1/2 chance
-        if (!(rand() % 2))
-        {
-            // length of message
-            int size = get_index(encode('\0', polynom), &buf[7], 1024);
-            // we only corrupt bits of message
-            if (size != 0)
-            {
-                times++;
-                int ind = rand() % size + 7;
-                int nbit = rand() % 16;
-                // one error correctable by server
-                buf[ind] = chg_nth_bit(nbit, buf[ind]);
-                // 1/4 chance to corrupt the message 2 times, not correctable by server
-                if (!(rand() % 2))
-                {
-                    buf[ind] = chg_nth_bit((nbit + 1) % 16, buf[ind]);
-                    times++;
-                }
-                printf("Message corrupted %d time(s)\n", times);
-            }
-        }
+        corrupt_message(buf, 2);
+
         // send to server
         CHK(send(serversoc, buf, 1024 * sizeof(uint16_t), 0));
     }
@@ -122,8 +118,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    signal(SIGINT, handle_sigint);
-
     int soc = socket(AF_INET, SOCK_STREAM, 0);
     int serversoc = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -131,6 +125,14 @@ int main(int argc, char **argv)
     {
         perror("error socket \n");
         exit(1);
+    }
+
+    // Set SO_REUSEADDR option
+    int reuseAddr = 1;
+    if (setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) < 0)
+    {
+        perror("Setting SO_REUSEADDR failed");
+        exit(EXIT_FAILURE);
     }
 
     // set up local address
@@ -151,6 +153,8 @@ int main(int argc, char **argv)
     struct sockaddr_in clientadd;
     socklen_t len = sizeof(struct sockaddr_in);
 
+    printf("============================ Proxy (read only) ============================\n");
+
     CHK(listen(soc, 1));
 
     // connection to server
@@ -167,7 +171,7 @@ int main(int argc, char **argv)
     {
         // connection from client,
         CHK(clientsoc = accept(soc, (struct sockaddr *)&clientadd, &len));
-        printf("Connected to client\n");
+        printf("Connected to client on ip: %s:%d\n", inet_ntoa(clientadd.sin_addr), ntohs(clientadd.sin_port));
         s.clientsoc = clientsoc;
         s.serversoc = serversoc;
 

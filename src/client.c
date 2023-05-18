@@ -78,8 +78,6 @@ void *psend(void *arg)
         perror("error getsockname :");
         exit(1);
     }
-    // printf("port : %d\n",htons(localadd.sin_port));
-    // printf("ip : %s\n",inet_ntoa(localadd.sin_addr));
 
     uint16_t bufencoded[TAILLE_PAQUET]; // 2 bytes for port + 4 bytes for ip address + 1 byte number packet + 1017 bytes of message
     char buf[TAILLE_PAQUET];
@@ -149,11 +147,7 @@ void *preceive(void *arg)
         numpacket = decode(encodednumpacket, polynom, table);
         // resend message
         printf("Resend packet n°%d\n", numpacket);
-        if (send(a->socproxy, a->historique[numpacket], 1024 * sizeof(uint16_t), 0) == -1)
-        {
-            perror("erreur send\n");
-            exit(1);
-        }
+        CHK(send(a->socproxy, a->historique[numpacket], TAILLE_PAQUET * sizeof(uint16_t), 0));
     }
 }
 

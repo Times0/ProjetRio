@@ -7,7 +7,7 @@
 // bits numeroted in order 15-0 //
 //////////////////////////////////
 
-void print_word(int nb,uint16_t val);
+void print_word(int nb, uint16_t val);
 
 // set nth bit to value (0-1)
 uint16_t set_nth_bit(int nthbit, uint16_t message, int value);
@@ -40,5 +40,5 @@ void initerrortable(uint8_t poly, uint8_t table[16][2]);
 
 int get_index(uint16_t wrd, uint16_t arr[], int size);
 
-// polynom (x^8 isn't precised always equals to 1), most significant bit at left 
+// polynom (x^8 isn't precised always equals to 1), most significant bit at left
 static uint8_t polynom = 0b10010011;

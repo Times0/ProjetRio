@@ -127,7 +127,7 @@ void *preceive(void *arg)
 
         if (error)
         {
-            printf("Message has been corrupted, asking for retransmission...\n");
+            printf("Message is too corrupted, asking for retransmission\n");
             pthread_t pid;
             arg_retransmit arg_r;
             arg_r.numpacket = buf[6];
@@ -136,7 +136,8 @@ void *preceive(void *arg)
         }
         else
         {
-            printf("< %s\n", &buf[7]);
+            printf("<%s:%d> ", inet_ntoa(clientadd.sin_addr), ntohs(clientadd.sin_port));
+            printf("%s\n", &buf[7]);
         }
     }
 }
@@ -167,15 +168,15 @@ int main(int argc, char **argv)
 
     CHK(bind(soc, (struct sockaddr *)&localadd, sizeof(localadd)));
 
-    printf("============================ SERVER (read only) ============================\n");
-
     int psoc;
     struct sockaddr_in proxyadd;
-    socklen_t len;
+    proxyadd.sin_family = AF_INET;
 
-    CHK(listen(soc, 1));
-    CHK(psoc = accept(soc, (struct sockaddr *)&proxyadd, &len));
+    printf("============================ SERVER (read only) ============================\n");
+    CHK(listen(soc, 3));
+    CHK(psoc = accept(soc, (struct sockaddr *)&proxyadd, &(socklen_t){sizeof(proxyadd)}));
 
     printf("Connected to proxy\n");
+
     preceive(&psoc);
 }
