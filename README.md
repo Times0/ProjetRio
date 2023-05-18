@@ -1,6 +1,13 @@
-Implementation du modele serveur proxy client en TCP avec code de detection et correction d'erreur (CRC)
 # ProjetRio
 ## Description
+Implementation du modele serveur proxy client en TCP avec code de detection et correction d'erreur (CRC)
+
+Features Clés:
+- [x] Serveur
+- [x] Proxy
+- [x] Client
+- [x] CRC
+
 
 ## Installation
 Clonez le projet puis
