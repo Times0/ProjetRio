@@ -96,13 +96,13 @@ void *psend(void *arg)
     while (1)
     {
         // read message from stdin
-        int nb = read(0, buf, TAILLE_PAQUET);
-        if (nb == -1)
-        {
-            perror("erreur read\n");
-            exit(1);
-        }
-        buf[nb - 1] = '\0'; // remove \n
+        printf("> ");
+        fgets(buf, TAILLE_PAQUET, stdin);
+        int nb = strlen(buf);
+        buf[nb - 1] = '\0';
+
+        if (nb == 1)
+            continue; // We dont want to send empty messages
 
         // encode message
         for (int i = 0; i < nb; i++)
@@ -119,7 +119,7 @@ void *psend(void *arg)
     }
 }
 
-// receive NAK from server
+// receive NACK from server
 void *preceive(void *arg)
 {
     arg_t *a = (arg_t *)arg;

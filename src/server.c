@@ -136,7 +136,7 @@ void *preceive(void *arg)
         }
         else
         {
-            printf("%s\n", &buf[7]);
+            printf("> %s\n", &buf[7]);
         }
     }
 }
