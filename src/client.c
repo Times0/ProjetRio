@@ -146,7 +146,7 @@ void *preceive(void *arg)
 
         numpacket = decode(encodednumpacket, polynom, table);
         // resend message
-        printf("Resend packet n°%d\n", numpacket);
+        // printf("Resend packet n°%d\n", numpacket);
         CHK(send(a->socproxy, a->historique[numpacket], TAILLE_PAQUET * sizeof(uint16_t), 0));
     }
 }
