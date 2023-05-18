@@ -95,7 +95,7 @@ void *psend(void *arg)
 
     while (1)
     {
-        // read message from stdin
+        // read message from stdinD
         printf("> ");
         fgets(buf, TAILLE_PAQUET, stdin);
         int nb = strlen(buf);

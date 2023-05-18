@@ -56,6 +56,16 @@ typedef struct
     int clientsoc;
 } soc2;
 
+#include <signal.h>
+#include <stdio.h>
+
+void handle_sigint(int sig)
+{
+    printf("Received SIGINT. Cleaning up and exiting...\n");
+    printf("%d\n", sig);
+    exit(0); // Terminate the program
+}
+
 void *prelay(void *arg)
 {
     int clientsoc = (((soc2 *)arg)->clientsoc);
@@ -111,8 +121,16 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    signal(SIGINT, handle_sigint);
+
     int soc = socket(AF_INET, SOCK_STREAM, 0);
     int serversoc = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (soc == -1 || serversoc == -1)
+    {
+        perror("error socket \n");
+        exit(1);
+    }
 
     // set up local address
     struct sockaddr_in localadd;
@@ -124,6 +142,7 @@ int main(int argc, char **argv)
 
     // set up server address
     struct sockaddr_in serveradd;
+    serveradd.sin_family = AF_INET;
     serveradd.sin_port = htons(atoi(argv[4]));
     inet_aton(argv[3], &(serveradd.sin_addr));
 
@@ -134,10 +153,15 @@ int main(int argc, char **argv)
     CHK(listen(soc, 1));
 
     // connection to server
-    CHK(connect(serversoc, (struct sockaddr *)&serveradd, sizeof(serveradd)));
+    if (connect(serversoc, (void *)&serveradd, len) == -1)
+    {
+        perror("error connect \n");
+        exit(1);
+    }
     printf("Connected to server\n");
 
     soc2 s;
+    // loop to accept as many clients as we want
     while (1)
     {
         // connection from client,
@@ -151,5 +175,5 @@ int main(int argc, char **argv)
         TCHK(pthread_create(&thread, NULL, prelay, &s));
     }
 
-    close(soc);
+    CHK(close(soc));
 }
