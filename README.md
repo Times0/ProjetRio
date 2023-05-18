@@ -1,6 +1,29 @@
-# RioProject
+# ProjetRio
+## Description
+Implementation du modele serveur proxy client
 
-Implementation du modele "serveur proxy client"
-Le proxy modifie le message
-Le client encode le message a l'aide d'un CRC polynomial
-Le client decode si le message contient au plus une eereur
+## Installation
+Clonez le projet puis
+
+```bash
+cd ProjetRio
+make
+```
+
+## Utilisation
+### Serveur
+```bash
+bin/server <ip_server> <port_server> 
+```
+### Proxy
+```bash
+bin/proxy <ip_proxy> <port_proxy> <ip_server> <port_server>
+```
+### Client
+```bash
+bin/client <ip_proxy> <port_proxy>
+```
+
+### Exemple
+
+![Demo](.github/assets/demo.gif)
