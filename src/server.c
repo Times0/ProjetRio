@@ -151,6 +151,14 @@ int main(int argc, char **argv)
 
     int soc = socket(AF_INET, SOCK_STREAM, 0);
 
+    // Set SO_REUSEADDR option
+    int reuseAddr = 1;
+    if (setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) < 0)
+    {
+        perror("Setting SO_REUSEADDR failed");
+        exit(EXIT_FAILURE);
+    }
+
     // local address (server)
     struct sockaddr_in localadd;
     localadd.sin_family = AF_INET;

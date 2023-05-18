@@ -66,6 +66,7 @@ void handle_sigint(int sig)
     exit(0); // Terminate the program
 }
 
+// One relay fonction for each client
 void *prelay(void *arg)
 {
     int clientsoc = (((soc2 *)arg)->clientsoc);
@@ -78,7 +79,7 @@ void *prelay(void *arg)
     {
         if (code == -1)
         {
-            perror("erreur recv\n");
+            perror("recv\n");
             exit(1);
         }
 
