@@ -10,9 +10,9 @@ Caractéristiques clés:
 - [x] Utilisation d'un **thread** par client du proxy
 - [x] Gestion des erreurs et de la plupart des déconnexions
 - [x] Gestion des clients multiples
-- [x] CRC avec polynome `P(x) = x^7 + x^4 + x^3 + 1` (8 bits)
-- [x] Correction d'erreur si 1 bit d'erreur par octet
-- [x] Detection d'erreur seulement, si 2 bits d'erreur par octet
+- [x] CRC avec polynome `P(x) = x^8 + x^7 + x^4 + x^3 + 1` (8 bits)
+- [x] Correction d'erreur si 1 bit d'erreur par tranche de 16 bits (char + code CRC) 
+- [x] Detection d'erreur seulement, si 3 bits d'erreur par tranche de 16 bits
 
 ## Installation
 Clonez le projet puis
