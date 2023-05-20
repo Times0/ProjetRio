@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
     int soc = socket(AF_INET, SOCK_STREAM, 0);
 
-    // Set SO_REUSEADDR option
+    // Set SO_REUSEADDR option to avoid "Address already in use" error
     int reuseAddr = 1;
     if (setsockopt(soc, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) < 0)
     {
